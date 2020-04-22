@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity">
+
+
+    <ImageView
+        android:id="@+id/image_background"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scaleType="centerCrop"
+        android:src="@drawable/background" />
+
+    <TextView
+        android:id="@+id/tv_Title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_marginLeft="10dp"
+        android:layout_marginTop="10dp"
+        android:textAllCaps="true"
+
+        android:layout_marginRight="10dp"
+        android:layout_marginBottom="10dp"
+        android:text="Flappy Bird!"
+        android:textColor="@color/colorAccent"
+        android:textSize="50dp"
+        android:textStyle="bold" />
+
+
+    <Button
+        android:id="@+id/button_Start"
+        android:layout_width="250dp"
+        android:layout_height="50dp"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true"
+        android:layout_marginLeft="10dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginRight="10dp"
+        android:layout_marginBottom="10dp"
+        android:text="Start Game"
+        android:textSize="15dp"
+        android:textColor="@color/colorPurple"
+        android:background="@drawable/gradient_button"
+        />
+
+    <ImageView
+        android:layout_marginLeft="10dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginRight="10dp"
+        android:layout_marginBottom="10dp"
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        android:id="@+id/volume_control"
+        android:src="@drawable/volume_on"
+        android:tint="@color/colorPurple"/>
+
+
+</RelativeLayout>
+
