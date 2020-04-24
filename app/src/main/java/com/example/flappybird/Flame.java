@@ -16,7 +16,7 @@ public class Flame {
     int width, height;
     Bitmap flame1, flame2, flame3, flame4;
 
-    Flame(Resources res) {
+    Flame(Resources res, int randomPosY, int screenWidth) {
         flame1 = BitmapFactory.decodeResource(res, R.drawable.flame);
         flame2 = BitmapFactory.decodeResource(res, R.drawable.flame);
         flame3 = BitmapFactory.decodeResource(res, R.drawable.flame);
@@ -36,7 +36,9 @@ public class Flame {
         flame3 = Bitmap.createScaledBitmap(flame1, width, height, false);
         flame4 = Bitmap.createScaledBitmap(flame1, width, height, false);
 
-        y = -height;
+        //y = -height;
+        x = 1920;
+        y = randomPosY;
     }
 
     Bitmap getFlame() {

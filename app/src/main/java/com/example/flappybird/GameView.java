@@ -1,30 +1,51 @@
 package com.example.flappybird;
 
+import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
+import android.os.CountDownTimer;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.SurfaceView;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class GameView extends SurfaceView implements Runnable{
     private Thread thread;
     private boolean isGameOver;
-    private boolean isPlaying;
+    private boolean isPlaying = true;
     private int screenX, screenY;
     public static float screenRatioX, screenRatioY;
     private Paint paint;
     private Flight flight;
     private Background background1, background2;
     private List<Bullet> bullets;
-    private Flame[] flames;
+    private List<Flame> flames;
+    //private Flame[] flames;
     private Random random;
+    private int screenWidth = getWidth();
+    private int screenHeight = getHeight();
+    private int generationRange = 1000;
+    private int flameSpeed = 17;
+    private TimerTask timerTask;
+    private Resources resources;
+    private Iterator<Flame> iterator;
+    private Timer timer;
+    private int collisionCount = 0;
+    private Context mContext;
+    private Activity mActivity;
 
-    public GameView(Context context, int screenX, int screenY) {
+    public GameView(Context context, int screenX, int screenY, Activity activity) {
         super(context);
         this.screenX = screenX;
         this.screenY = screenY;
@@ -32,6 +53,18 @@ public class GameView extends SurfaceView implements Runnable{
         screenRatioY = 1080f / screenY;
         paint = new Paint();
         isGameOver = false;
+        mContext = context;
+        mActivity = activity;
+        flames = new ArrayList<>();
+        iterator = flames.iterator();
+        resources  = getResources();
+        timerTask = new TimerTask() {
+            @Override
+            public void run() {
+                flames.add( new Flame(resources, getRandomY(), screenWidth));
+                Log.e("Timer", "Timer triggered");
+            }
+        };
 
         background1 = new Background(screenX, screenY, getResources());
         background2 = new Background(screenX, screenY, getResources());
@@ -40,25 +73,63 @@ public class GameView extends SurfaceView implements Runnable{
 
         bullets = new ArrayList<>();
 
-        flames = new Flame[4];
+        //flames = new Flame[4];
         random = new Random();
 
         background2.x = screenX;
 
-
-        for(int i = 0; i < 4; i++) {
+        //amount of flames set here
+        /*for(int i = 0; i < 11; i++) {
             Flame flame = new Flame(getResources());
-            flames[i] = flame;
-        }
+            flames.add(flame);
+        }*/
+        flames.add( new Flame(resources, getRandomY(), 1920));
+    }
+
+    public void startTimer() {
+       if(timer != null) {
+           return;
+       }
+       timer = new Timer();
+       timer.scheduleAtFixedRate(timerTask, 0, 1000);
+    }
+
+    public void stopTimer() {
+        timer.cancel();
+        timer = null;
+    }
+
+    private int getRandomY() {
+        return random.nextInt(1080);
+    }
+
+    private void spawnFlames() {
+        /*for(Flame flame : flames) {
+            //int randomPosX = random.nextInt(((screenWidth + generationRange) - screenWidth) + 1) + screenWidth;
+            int randomPosY = random.nextInt((screenHeight - 0) + 1) + 0;
+            flame.x = screenWidth;
+            flame.y = randomPosY;
+        }*/
+    }
+
+    private void updateFlames() {
+       for( Flame flame : flames) {
+           flame.x = flame.x - flameSpeed;
+       }
     }
 
     @Override
     public void run() {
+        //spawnFlames();
+        //Starts spawning flames every 5 seconds
+        startTimer();
         while(isPlaying) {
             update();
+            //updateFlames();
             draw();
             sleep();
         }
+        stopTimer();
     }
 
     private void update() {
@@ -87,6 +158,14 @@ public class GameView extends SurfaceView implements Runnable{
             flight.y = screenY - flight.height;
         }
 
+        //if flames have left screen
+        while(iterator.hasNext()) {
+            iterator.next();
+
+            if(iterator.next().x < 0) {
+                iterator.remove();
+            }
+        }
         List<Bullet> trash = new ArrayList<>();
 
 
@@ -110,10 +189,14 @@ public class GameView extends SurfaceView implements Runnable{
             bullets.remove(bullet);
         }
 
+        updateFlames();
+        //setting position of flames right here
+        //generationRange is for the space offscreen where the flames spawn
         for(Flame flame: flames) {
-            flame.x = flame.x - flame.speed;
 
-            if(flame.x + flame.width < 0) { //checking flame off screen
+            //flame.x = flame.x - flame.speed;
+
+            /*if(flame.x + flame.width < 0) { //checking flame off screen
 
                 if(!flame.wasShot) {
                     isGameOver = true;
@@ -133,10 +216,11 @@ public class GameView extends SurfaceView implements Runnable{
 
 
 
-            }
+            }*/
             //checking collision - ends game
-            if(Rect.intersects(flame.getCollisionShape(), flight.getCollisionShape()));
-            {
+            if(Rect.intersects(flame.getCollisionShape(), flight.getCollisionShape())) {
+                collisionCount++;
+                Log.e("CollisionDetector", "Collision detected! Count: " + String.valueOf(collisionCount + String.valueOf(collisionCount)));
                 isGameOver = true;
             }
 
@@ -150,11 +234,30 @@ public class GameView extends SurfaceView implements Runnable{
             canvas.drawBitmap(background2.background, background2.x, background2.y, paint);
 
 
-            if(!isGameOver) {
+            if(isGameOver) {
                 isPlaying = false;
                 canvas.drawBitmap(flight.getDead(), flight.x, flight.y, paint);
+
+                Paint paint = new Paint();
+
+                paint.setColor(Color.BLACK);
+                paint.setTextSize(75);
+
+                int xPos = (canvas.getWidth() / 2);
+                int yPos = (int) ((canvas.getHeight() / 2) - ((paint.descent() + paint.ascent()) / 2));
+
+                canvas.drawText("Game Over!", xPos, yPos, paint);
+                timer.cancel();
                 getHolder().unlockCanvasAndPost(canvas);
-               return;
+
+                try {
+                    Thread.sleep(3000);
+                    mContext.startActivity( new Intent( mContext, MainActivity.class));
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+
+                return;
             }
 //
         for(Flame flame: flames) {
